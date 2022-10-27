@@ -1,0 +1,5 @@
+[run]
+omit =
+   taynac/wsgi.py
+   taynac/cmd/*
+   taynac/common/config.py

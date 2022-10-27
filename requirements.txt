@@ -1,0 +1,5 @@
+pbr
+keystoneauth1
+oslo.config
+oslo.log
+python-freshdesk
