@@ -12,10 +12,12 @@ ENV PYTHONUNBUFFERED=1
 # Install pip requirements
 COPY requirements.txt .
 
-RUN apt-get update && apt-get install -y gcc
+# We need git for pbr to determine the version
+RUN apt update && apt install -y gcc git
 
+RUN python -m pip install --upgrade pip
 RUN python -m pip install -c https://releases.openstack.org/constraints/upper/zed -r requirements.txt
-RUN python -m pip install -c https://releases.openstack.org/constraints/upper/zed gunicorn 
+RUN python -m pip install -c https://releases.openstack.org/constraints/upper/zed gunicorn
 
 WORKDIR /app
 COPY . /app
