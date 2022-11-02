@@ -2,4 +2,5 @@ pbr
 keystoneauth1
 oslo.config
 oslo.log
+stevedore
 python-freshdesk

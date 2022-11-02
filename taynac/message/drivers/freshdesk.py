@@ -15,7 +15,7 @@ from freshdesk.v2 import api as fd_api
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from taynac.drivers import base
+from taynac.message.drivers import base
 
 
 CONF = cfg.CONF

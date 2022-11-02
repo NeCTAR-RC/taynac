@@ -16,7 +16,7 @@ from unittest import mock
 
 from oslo_config import cfg
 
-from taynac.drivers import freshdesk
+from taynac.message.drivers import freshdesk
 from taynac.tests.unit import base
 
 
