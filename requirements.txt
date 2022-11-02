@@ -1,6 +1,13 @@
 pbr
 keystoneauth1
+keystonemiddleware
 oslo.config
 oslo.log
+oslo.middleware
+oslo.policy
 stevedore
 python-freshdesk
+flask
+flask_restful
+marshmallow
+flask_marshmallow
