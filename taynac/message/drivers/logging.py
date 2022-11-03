@@ -26,3 +26,4 @@ class LoggingDriver(base.MessagingDriver):
     def send_message(self, subject, body, recipient, cc=[]):
         LOG.info("Sending message to %s, cc=%s "
                  "Subject=%s message=%s", recipient, cc, subject, body)
+        return {'backend_id': None}

@@ -31,7 +31,7 @@ class MessageAPI(object):
         ).driver
 
     def send_message(self, subject, body, recipient, cc=[]):
-        self.driver.send_message(subject=subject,
-                                 body=body,
-                                 recipient=recipient,
-                                 cc=cc)
+        return self.driver.send_message(subject=subject,
+                                        body=body,
+                                        recipient=recipient,
+                                        cc=cc)
