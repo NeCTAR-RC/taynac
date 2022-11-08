@@ -25,3 +25,11 @@ class MessageSchema(ma.Schema):
 
 
 message = MessageSchema()
+
+
+class MessageResponseSchema(ma.Schema):
+
+    backend_id = fields.Str(required=True)
+
+
+message_response = MessageResponseSchema()

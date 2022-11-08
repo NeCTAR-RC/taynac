@@ -53,4 +53,4 @@ class Message(base.Resource):
                                        message["recipient"],
                                        message["cc"])
 
-        return data, 202
+        return schemas.message_response.dump(data)

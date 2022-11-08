@@ -23,7 +23,7 @@ class TestMessageAPI(base.ApiTestCase):
                 'recipient': 'test@test.test',
                 'cc': ['test@test.com']}
         response = self.client.post('/v1/message/', json=data)
-        self.assertStatus(response, 403)
+        self.assert403(response)
         self.assertEqual('Not authorised', response.get_json()['message'])
 
 
@@ -37,7 +37,7 @@ class TestAdminMessageAPI(TestMessageAPI):
                 'recipient': 'test@test.test',
                 'cc': ['test@test.com']}
         response = self.client.post('/v1/message/', json=data)
-        self.assertStatus(response, 202)
+        self.assert200(response)
         self.assertIsNone(response.get_json()['backend_id'])
 
     def test_message_send_missing_data(self):
