@@ -11,3 +11,4 @@ flask
 flask_restful
 marshmallow
 flask_marshmallow
+python-memcached
