@@ -21,7 +21,9 @@ class MessageSchema(ma.Schema):
     subject = fields.Str(required=True)
     body = fields.Str(required=True)
     recipient = fields.Email(required=True)
-    cc = fields.List(fields.Email(required=False), required=True)
+    cc = fields.List(fields.Email())
+    tags = fields.List(fields.Str())
+    backend_id = fields.Str()
 
 
 message = MessageSchema()

@@ -49,8 +49,10 @@ class Message(base.Resource):
 
         mapi = api.MessageAPI()
         data = mapi.send_message(message["subject"],
-                                       message["body"],
-                                       message["recipient"],
-                                       message["cc"])
+                                 message["body"],
+                                 message["recipient"],
+                                 message["cc"],
+                                 tags=message.get("tags", []),
+                                 backend_id=message.get("backend_id", None))
 
         return schemas.message_response.dump(data)

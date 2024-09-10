@@ -57,6 +57,9 @@ base_rules = [
     policy.RuleDefault(
         name=ADMIN_OR_WRITER,
         check_str='rule:admin_required or rule:writer'),
+    policy.RuleDefault(
+        name='admin_or_service',
+        check_str='rule:admin_required or role:service'),
 ]
 
 MESSAGE_PREFIX = "taynac:message:%s"
@@ -64,7 +67,7 @@ MESSAGE_PREFIX = "taynac:message:%s"
 message_rules = [
     policy.DocumentedRuleDefault(
         name=MESSAGE_PREFIX % 'send',
-        check_str='rule:admin_required',
+        check_str='rule:admin_or_service',
         description='Send message.',
         operations=[{'path': '/v1/message/',
                      'method': 'POST'}]),

@@ -14,5 +14,6 @@
 
 class MessagingDriver(object):
 
-    def send_message(subject, body, recipient, cc=[]):
+    def send_message(subject, body, recipient, cc=[], tags=[],
+                     backend_id=None):
         raise NotImplementedError

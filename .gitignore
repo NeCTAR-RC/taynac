@@ -18,6 +18,10 @@ develop-eggs
 lib
 lib64
 
+# Metadata
+AUTHORS
+ChangeLog
+
 # Installer logs
 pip-log.txt
 logs/*

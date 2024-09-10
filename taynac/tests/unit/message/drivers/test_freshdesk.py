@@ -26,6 +26,39 @@ CONF = cfg.CONF
 @mock.patch('freshdesk.v2.api.API')
 class FreshDeskDriverTests(base.TestCase):
 
+    def test_api_send_new_message(self, mock_api):
+        driver = freshdesk.FreshDeskDriver()
+        mock_api.return_value.tickets.create_outbound_email.return_value = \
+            mock.Mock(id=3)
+        response = driver.send_message('subject-test',
+                                        'description-text',
+                                        'owner@fake.org',
+                                        cc=['manager1@fake.org'],
+                                        tags=['foo', 'bar'])
+
+        mock_api.return_value.tickets.create_outbound_email.assert_called_with(
+            subject='subject-test',
+            description='description-text',
+            email='owner@fake.org',
+            email_config_id=int(CONF.freshdesk.email_config_id),
+            group_id=456,
+            cc_emails=['manager1@fake.org'],
+            tags=['foo', 'bar']
+        )
+        self.assertEqual({'backend_id': 3}, response)
+
+    def test_api_send_followup_message(self, mock_api):
+        driver = freshdesk.FreshDeskDriver()
+        response = driver.send_message('subject-test',
+                                       'more text',
+                                       'owner@fake.org',
+                                       cc=['manager1@fake.org'],
+                                       tags=['foo', 'bar'],
+                                       backend_id=44)
+        mock_api.return_value.comments.create_reply.assert_called_with(
+            44, body='more text', cc_emails=['manager1@fake.org'])
+        self.assertEqual({'backend_id': 44}, response)
+
     def test_create_ticket(self, mock_api):
         driver = freshdesk.FreshDeskDriver()
         mock_api.return_value.tickets.create_outbound_email.return_value = \
@@ -34,14 +67,15 @@ class FreshDeskDriverTests(base.TestCase):
                                           ['manager1@fake.org'],
                                           'subject-test',
                                           'description-text',
-                                          tags=['foo', 'bar'])
+                                          tags=['foo', 'bar'],
+                                          group_id=99)
 
         mock_api.return_value.tickets.create_outbound_email.assert_called_with(
             subject='subject-test',
             description='description-text',
             email='owner@fake.org',
             email_config_id=int(CONF.freshdesk.email_config_id),
-            group_id=int(CONF.freshdesk.group_id),
+            group_id=99,
             cc_emails=['manager1@fake.org'],
             tags=['foo', 'bar']
         )

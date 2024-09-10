@@ -54,7 +54,7 @@ freshdesk_opts = [
     cfg.StrOpt('domain'),
     cfg.StrOpt('key', secret=True),
     cfg.IntOpt('email_config_id'),
-    cfg.IntOpt('group_id'),
+    cfg.IntOpt('group_id', help="Default Freshdesk group"),
 ]
 
 cfg.CONF.register_opts(taynac_opts, group='taynac')

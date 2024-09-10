@@ -30,8 +30,11 @@ class MessageAPI(object):
             invoke_on_load=True
         ).driver
 
-    def send_message(self, subject, body, recipient, cc=[]):
+    def send_message(self, subject, body, recipient, cc=[], tags=[],
+                     backend_id=None):
         return self.driver.send_message(subject=subject,
                                         body=body,
                                         recipient=recipient,
-                                        cc=cc)
+                                        cc=cc,
+                                        tags=tags,
+                                        backend_id=backend_id)
