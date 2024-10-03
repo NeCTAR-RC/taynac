@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -12,9 +11,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from setuptools import setup
+import pbr.version
 
-setup(
-    setup_requires=["pbr>=2.0.0"],
-    pbr=True,
-)
+version_info = pbr.version.VersionInfo("taynac")
+
+
+def vendor_string():
+    return "Nectar"
+
+
+def product_string():
+    return "Taynac"
+
+
+def version_string_with_package():
+    return version_info.version_string()
