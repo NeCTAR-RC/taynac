@@ -12,3 +12,4 @@ flask_restful
 marshmallow
 flask_marshmallow
 python-memcached
+setuptools  # keystonemiddleware depends on this but doesn't include it in requirements
