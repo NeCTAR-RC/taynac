@@ -22,7 +22,6 @@ CONF = cfg.CONF
 
 
 class MessageAPITests(base.TestCase):
-
     def test_init(self):
         message_api = api.MessageAPI()
         self.assertIsInstance(message_api.driver, logging_driver.LoggingDriver)

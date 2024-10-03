@@ -23,13 +23,13 @@ LOG = logging.getLogger(__name__)
 
 
 class FreshDeskDriver(base.MessagingDriver):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.api = fd_api.API(CONF.freshdesk.domain, CONF.freshdesk.key)
 
-    def send_message(self, subject, body, recipient, cc=[], tags=[],
-                     backend_id=None):
+    def send_message(
+        self, subject, body, recipient, cc=[], tags=[], backend_id=None
+    ):
         """Send message as an outbound freshdesk email or ticket reply
 
         If a 'backend_id' is provided (i.e. for an existing ticket),
@@ -42,17 +42,18 @@ class FreshDeskDriver(base.MessagingDriver):
             ticket_id = int(backend_id)
             self._update_ticket(ticket_id, body, cc_emails=cc)
         else:
-            ticket_id = self._create_ticket(email=recipient,
-                                            cc_emails=cc,
-                                            subject=subject,
-                                            body=body,
-                                            tags=tags,
-                                            group_id=CONF.freshdesk.group_id)
+            ticket_id = self._create_ticket(
+                email=recipient,
+                cc_emails=cc,
+                subject=subject,
+                body=body,
+                tags=tags,
+                group_id=CONF.freshdesk.group_id,
+            )
 
-        return {'backend_id': ticket_id}
+        return {"backend_id": ticket_id}
 
-    def _create_ticket(self, email, cc_emails, subject, body, tags,
-                       group_id):
+    def _create_ticket(self, email, cc_emails, subject, body, tags, group_id):
         ticket = self.api.tickets.create_outbound_email(
             subject=subject,
             description=body,
@@ -60,17 +61,22 @@ class FreshDeskDriver(base.MessagingDriver):
             email_config_id=int(CONF.freshdesk.email_config_id),
             group_id=group_id,
             cc_emails=cc_emails,
-            tags=tags
+            tags=tags,
         )
         ticket_id = ticket.id
-        LOG.info("Created ticket %s, requester=%s, cc=%s",
-                 ticket_id, email, cc_emails)
+        LOG.info(
+            "Created ticket %s, requester=%s, cc=%s",
+            ticket_id,
+            email,
+            cc_emails,
+        )
 
         return ticket_id
 
     def _update_ticket(self, ticket_id, body, cc_emails):
-        self.api.comments.create_reply(ticket_id, body=body,
-                                       cc_emails=cc_emails)
+        self.api.comments.create_reply(
+            ticket_id, body=body, cc_emails=cc_emails
+        )
         LOG.info("Sent reply to ticket %s", ticket_id)
 
     def _update_ticket_requester(self, ticket_id, owner):

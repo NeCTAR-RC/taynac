@@ -29,12 +29,11 @@ LOG = logging.getLogger(__name__)
 
 
 class Message(base.Resource):
-
     POLICY_PREFIX = policies.MESSAGE_PREFIX
 
     def post(self, **kwargs):
         try:
-            self.authorize('send')
+            self.authorize("send")
         except policy.PolicyNotAuthorized:
             flask_restful.abort(403, message="Not authorised")
         try:
@@ -48,11 +47,13 @@ class Message(base.Resource):
             return {"message": err.messages}, 422
 
         mapi = api.MessageAPI()
-        data = mapi.send_message(message["subject"],
-                                 message["body"],
-                                 message["recipient"],
-                                 message["cc"],
-                                 tags=message.get("tags", []),
-                                 backend_id=message.get("backend_id", None))
+        data = mapi.send_message(
+            message["subject"],
+            message["body"],
+            message["recipient"],
+            message["cc"],
+            tags=message.get("tags", []),
+            backend_id=message.get("backend_id", None),
+        )
 
         return schemas.message_response.dump(data)

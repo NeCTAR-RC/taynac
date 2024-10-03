@@ -17,7 +17,6 @@ from marshmallow import fields
 
 
 class MessageSchema(ma.Schema):
-
     subject = fields.Str(required=True)
     body = fields.Str(required=True)
     recipient = fields.Email(required=True)
@@ -30,7 +29,6 @@ message = MessageSchema()
 
 
 class MessageResponseSchema(ma.Schema):
-
     backend_id = fields.Str(required=True)
 
 

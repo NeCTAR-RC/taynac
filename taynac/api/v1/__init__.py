@@ -15,4 +15,4 @@ from taynac.api.v1.resources import message
 
 
 def initialize_resources(api):
-    api.add_resource(message.Message, '/v1/message/')
+    api.add_resource(message.Message, "/v1/message/")

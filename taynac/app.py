@@ -47,7 +47,7 @@ def create_app(test_config=None, conf_file=None, init_config=True):
     if init_config:
         config.setup_logging(CONF)
 
-    api_bp = flask.Blueprint('api', __name__, url_prefix='/')
+    api_bp = flask.Blueprint("api", __name__, url_prefix="/")
     register_extensions(app, api_bp)
     register_resources(extensions.api)
     register_blueprints(app)
@@ -61,7 +61,7 @@ def create_app(test_config=None, conf_file=None, init_config=True):
     app.wsgi_app = healthcheck.Healthcheck(app.wsgi_app)
     app.wsgi_app = request_id.RequestId(app.wsgi_app)
 
-    if CONF.auth_strategy == 'keystone':
+    if CONF.auth_strategy == "keystone":
         app.wsgi_app = keystone.KeystoneContext(app.wsgi_app)
         app.wsgi_app = keystone.SkippingAuthProtocol(app.wsgi_app, {})
 

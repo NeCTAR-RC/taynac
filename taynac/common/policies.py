@@ -16,61 +16,63 @@ from oslo_policy import policy
 
 
 CONF = cfg.CONF
-_POLICY_PATH = '/etc/taynac/policy.yaml'
+_POLICY_PATH = "/etc/taynac/policy.yaml"
 
 
 enforcer = policy.Enforcer(CONF, policy_file=_POLICY_PATH)
 
-ADMIN_OR_OWNER_OR_WRITER = 'admin_or_owner_or_writer'
-ADMIN_OR_OWNER_OR_READER = 'admin_or_owner_or_reader'
-ADMIN_OR_READER = 'admin_or_reader'
-ADMIN_OR_WRITER = 'admin_or_writer'
-ADMIN_OR_OWNER = 'admin_or_owner'
+ADMIN_OR_OWNER_OR_WRITER = "admin_or_owner_or_writer"
+ADMIN_OR_OWNER_OR_READER = "admin_or_owner_or_reader"
+ADMIN_OR_READER = "admin_or_reader"
+ADMIN_OR_WRITER = "admin_or_writer"
+ADMIN_OR_OWNER = "admin_or_owner"
 
 
 base_rules = [
     policy.RuleDefault(
-        name='admin_required',
-        check_str='role:admin or is_admin:1'),
+        name="admin_required", check_str="role:admin or is_admin:1"
+    ),
     policy.RuleDefault(
-        name='reader',
-        check_str='role:reader or role:read_only '
-                  'or role:cloud_admin or role:helpdesk'),
+        name="reader",
+        check_str="role:reader or role:read_only "
+        "or role:cloud_admin or role:helpdesk",
+    ),
     policy.RuleDefault(
-        name='writer',
-        check_str='role:cloud_admin or role:helpdesk'),
+        name="writer", check_str="role:cloud_admin or role:helpdesk"
+    ),
+    policy.RuleDefault(name="owner", check_str="project_id:%(project_id)s"),
     policy.RuleDefault(
-        name='owner',
-        check_str='project_id:%(project_id)s'),
-    policy.RuleDefault(
-        name=ADMIN_OR_OWNER,
-        check_str='rule:admin_required or rule:owner'),
+        name=ADMIN_OR_OWNER, check_str="rule:admin_required or rule:owner"
+    ),
     policy.RuleDefault(
         name=ADMIN_OR_OWNER_OR_READER,
-        check_str='rule:admin_or_owner or rule:reader'),
+        check_str="rule:admin_or_owner or rule:reader",
+    ),
     policy.RuleDefault(
         name=ADMIN_OR_OWNER_OR_WRITER,
-        check_str='rule:admin_or_owner or rule:writer'),
+        check_str="rule:admin_or_owner or rule:writer",
+    ),
     policy.RuleDefault(
-        name=ADMIN_OR_READER,
-        check_str='rule:admin_required or rule:reader'),
+        name=ADMIN_OR_READER, check_str="rule:admin_required or rule:reader"
+    ),
     policy.RuleDefault(
-        name=ADMIN_OR_WRITER,
-        check_str='rule:admin_required or rule:writer'),
+        name=ADMIN_OR_WRITER, check_str="rule:admin_required or rule:writer"
+    ),
     policy.RuleDefault(
-        name='admin_or_service',
-        check_str='rule:admin_required or role:service'),
+        name="admin_or_service",
+        check_str="rule:admin_required or role:service",
+    ),
 ]
 
 MESSAGE_PREFIX = "taynac:message:%s"
 
 message_rules = [
     policy.DocumentedRuleDefault(
-        name=MESSAGE_PREFIX % 'send',
-        check_str='rule:admin_or_service',
-        description='Send message.',
-        operations=[{'path': '/v1/message/',
-                     'method': 'POST'}]),
+        name=MESSAGE_PREFIX % "send",
+        check_str="rule:admin_or_service",
+        description="Send message.",
+        operations=[{"path": "/v1/message/", "method": "POST"}],
+    ),
 ]
 
 enforcer.register_defaults(base_rules)
