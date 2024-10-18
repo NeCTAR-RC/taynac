@@ -46,7 +46,7 @@ class FreshDeskDriver(base.MessagingDriver):
                 email=recipient,
                 cc_emails=cc,
                 subject=subject,
-                body=body,
+                body=self.format(body),
                 tags=tags,
                 group_id=CONF.freshdesk.group_id,
             )

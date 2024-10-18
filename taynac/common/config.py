@@ -46,7 +46,13 @@ taynac_opts = [
         default="freshdesk",
         choices=["freshdesk", "logging"],
         help="Messaging driver to use",
-    )
+    ),
+    cfg.StrOpt(
+        "template_dir",
+        default="",
+        help="Location of Taynac's templates.  "
+        "Defaults to the code-base 'templates' directory",
+    ),
 ]
 
 freshdesk_opts = [

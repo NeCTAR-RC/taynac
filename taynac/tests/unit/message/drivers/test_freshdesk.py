@@ -12,15 +12,29 @@
 #    under the License.
 
 
+import jinja2
+import os
 from unittest import mock
 
 from oslo_config import cfg
 
+import taynac
 from taynac.message.drivers import freshdesk
 from taynac.tests.unit import base
 
 
 CONF = cfg.CONF
+
+
+def test_jinja2_env():
+    """Create a jinja2 template env for testing."""
+
+    test_template_dir = os.path.realpath(
+        os.path.join(os.path.dirname(taynac.__file__), 'testing', 'templates')
+    )
+    return jinja2.Environment(
+        loader=jinja2.FileSystemLoader(test_template_dir)
+    )
 
 
 @mock.patch("freshdesk.v2.api.API")
@@ -30,17 +44,24 @@ class FreshDeskDriverTests(base.TestCase):
         mock_api.return_value.tickets.create_outbound_email.return_value = (
             mock.Mock(id=3)
         )
-        response = driver.send_message(
-            "subject-test",
-            "description-text",
-            "owner@fake.org",
-            cc=["manager1@fake.org"],
-            tags=["foo", "bar"],
-        )
+        with mock.patch(
+            "taynac.message.drivers.base.get_jinja2_env",
+            return_value=test_jinja2_env(),
+        ):
+            response = driver.send_message(
+                "subject-test",
+                "description-text",
+                "owner@fake.org",
+                cc=["manager1@fake.org"],
+                tags=["foo", "bar"],
+            )
 
         mock_api.return_value.tickets.create_outbound_email.assert_called_with(
             subject="subject-test",
-            description="description-text",
+            description="description-text\n"
+            "<br>\n"
+            "<br>\n"
+            "<p>Here be sasquatches</p>",
             email="owner@fake.org",
             email_config_id=int(CONF.freshdesk.email_config_id),
             group_id=456,
