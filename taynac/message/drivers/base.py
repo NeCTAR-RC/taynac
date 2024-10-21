@@ -42,7 +42,7 @@ class MessagingDriver:
     ):
         raise NotImplementedError
 
-    def format(self, body, template_name='envelope.tmpl') -> str:
+    def format(self, subject, body, template_name='envelope.tmpl') -> str:
         env = get_jinja2_env()
         try:
             template = env.get_template(template_name)
@@ -51,4 +51,4 @@ class MessagingDriver:
                 f"Cannot find template {template_name}"
             )
 
-        return template.render({'body': body})
+        return template.render({'subject': subject, 'body': body})

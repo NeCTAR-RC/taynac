@@ -42,4 +42,4 @@ class DriverBaseTests(base.TestCase):
         with self.assertRaisesRegex(
             exceptions.TemplateNotFound, 'Cannot find template bzzz.tmpl'
         ):
-            driver.format('stuff', 'bzzz.tmpl')
+            driver.format('subject', 'body', 'bzzz.tmpl')
