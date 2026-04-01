@@ -18,6 +18,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_middleware import healthcheck
 from oslo_middleware import request_id
+from werkzeug.middleware import dispatcher
 
 from taynac.api import v1 as api_v1
 from taynac.common import config
@@ -58,7 +59,13 @@ def create_app(test_config=None, conf_file=None, init_config=True):
     except OSError:
         pass
 
-    app.wsgi_app = healthcheck.Healthcheck(app.wsgi_app)
+    hc_app = healthcheck.Healthcheck.app_factory(
+        {}, oslo_config_project='taynac'
+    )
+    app.wsgi_app = dispatcher.DispatcherMiddleware(
+        app.wsgi_app, {'/healthcheck': hc_app}
+    )
+
     app.wsgi_app = request_id.RequestId(app.wsgi_app)
 
     if CONF.auth_strategy == "keystone":
