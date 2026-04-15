@@ -20,6 +20,7 @@ from oslo_middleware import healthcheck
 from oslo_middleware import request_id
 from werkzeug.middleware import dispatcher
 
+from taynac.api import discovery
 from taynac.api import v1 as api_v1
 from taynac.common import config
 from taynac.common import keystone
@@ -86,4 +87,5 @@ def register_blueprints(app):
 
 
 def register_resources(api):
+    api.add_resource(discovery.Versions, "/")
     api_v1.initialize_resources(api)
