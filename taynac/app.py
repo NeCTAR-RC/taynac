@@ -17,6 +17,7 @@ import flask
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_middleware import healthcheck
+from oslo_middleware import http_proxy_to_wsgi
 from oslo_middleware import request_id
 from werkzeug.middleware import dispatcher
 
@@ -66,7 +67,7 @@ def create_app(test_config=None, conf_file=None, init_config=True):
     app.wsgi_app = dispatcher.DispatcherMiddleware(
         app.wsgi_app, {'/healthcheck': hc_app}
     )
-
+    app.wsgi_app = http_proxy_to_wsgi.HTTPProxyToWSGI(app.wsgi_app)
     app.wsgi_app = request_id.RequestId(app.wsgi_app)
 
     if CONF.auth_strategy == "keystone":
