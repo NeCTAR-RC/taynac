@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 class LoggingDriver(base.MessagingDriver):
     def send_message(self, subject, body, recipient, cc=[], tags=[], **kwargs):
         LOG.info(
-            "Sending message to %s, cc=%s " "Subject=%s message=%s tags=%s",
+            "Sending message to %s, cc=%s Subject=%s message=%s tags=%s",
             recipient,
             cc,
             subject,
