@@ -70,6 +70,7 @@ message_rules = [
     policy.DocumentedRuleDefault(
         name=MESSAGE_PREFIX % "send",
         check_str="rule:admin_or_service",
+        scope_types=['system', 'project'],
         description="Send message.",
         operations=[{"path": "/v1/message/", "method": "POST"}],
     ),
