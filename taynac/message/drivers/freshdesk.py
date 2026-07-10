@@ -12,9 +12,11 @@
 #    under the License.
 
 from freshdesk.v2 import api as fd_api
+from freshdesk.v2 import errors as fd_errors
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from taynac.common import exceptions
 from taynac.message.drivers import base
 
 
@@ -38,18 +40,22 @@ class FreshDeskDriver(base.MessagingDriver):
         Only the body and cc's will be used.
         """
 
-        if backend_id:
-            ticket_id = int(backend_id)
-            self._update_ticket(ticket_id, body, cc_emails=cc)
-        else:
-            ticket_id = self._create_ticket(
-                email=recipient,
-                cc_emails=cc,
-                subject=subject,
-                body=self.format(subject, body),
-                tags=tags,
-                group_id=CONF.freshdesk.group_id,
-            )
+        try:
+            if backend_id:
+                ticket_id = int(backend_id)
+                self._update_ticket(ticket_id, body, cc_emails=cc)
+            else:
+                ticket_id = self._create_ticket(
+                    email=recipient,
+                    cc_emails=cc,
+                    subject=subject,
+                    body=self.format(subject, body),
+                    tags=tags,
+                    group_id=CONF.freshdesk.group_id,
+                )
+        except fd_errors.FreshdeskBadRequest as e:
+            LOG.warning("Freshdesk rejected message to %s: %s", recipient, e)
+            raise exceptions.MessageSendError(str(e))
 
         return {"backend_id": ticket_id}
 

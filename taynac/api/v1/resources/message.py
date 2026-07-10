@@ -21,6 +21,7 @@ from oslo_policy import policy
 
 from taynac.api.v1.resources import base
 from taynac.api.v1.schemas import message as schemas
+from taynac.common import exceptions
 from taynac.common import policies
 from taynac.message import api
 
@@ -47,13 +48,16 @@ class Message(base.Resource):
             return {"message": err.messages}, 422
 
         mapi = api.MessageAPI()
-        data = mapi.send_message(
-            message["subject"],
-            message["body"],
-            message["recipient"],
-            message["cc"],
-            tags=message.get("tags", []),
-            backend_id=message.get("backend_id", None),
-        )
+        try:
+            data = mapi.send_message(
+                message["subject"],
+                message["body"],
+                message["recipient"],
+                message["cc"],
+                tags=message.get("tags", []),
+                backend_id=message.get("backend_id", None),
+            )
+        except exceptions.MessageSendError as err:
+            return {"message": str(err)}, 400
 
         return schemas.message_response.dump(data)

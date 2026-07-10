@@ -12,6 +12,9 @@
 #    under the License.
 
 
+from unittest import mock
+
+from taynac.common import exceptions
 from taynac.tests.unit import base
 
 
@@ -50,6 +53,26 @@ class TestAdminMessageAPI(TestMessageAPI):
             ["Missing data for required field."],
             response.get_json()["message"]["subject"],
         )
+
+    def test_message_send_error(self):
+        data = {
+            "subject": "Test",
+            "body": "Hi",
+            "recipient": "test@test.test",
+            "cc": ["test@test.com"],
+        }
+        error_message = (
+            "Validation failed: [{'field': 'cc_emails', "
+            "'message': 'Has 546 values, it can have maximum of 49 values', "
+            "'code': 'invalid_value'}]"
+        )
+        with mock.patch(
+            "taynac.message.api.MessageAPI.send_message",
+            side_effect=exceptions.MessageSendError(error_message),
+        ):
+            response = self.client.post("/v1/message/", json=data)
+        self.assertStatus(response, 400)
+        self.assertEqual(error_message, response.get_json()["message"])
 
     def test_message_send_no_data(self):
         response = self.client.post("/v1/message/")

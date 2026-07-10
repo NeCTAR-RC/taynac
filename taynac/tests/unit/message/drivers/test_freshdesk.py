@@ -16,9 +16,11 @@ import jinja2
 import os
 from unittest import mock
 
+from freshdesk.v2 import errors as fd_errors
 from oslo_config import cfg
 
 import taynac
+from taynac.common import exceptions
 from taynac.message.drivers import freshdesk
 from taynac.tests.unit import base
 
@@ -84,6 +86,25 @@ class FreshDeskDriverTests(base.TestCase):
             44, body="more text", cc_emails=["manager1@fake.org"]
         )
         self.assertEqual({"backend_id": 44}, response)
+
+    def test_api_send_message_bad_request(self, mock_api):
+        driver = freshdesk.FreshDeskDriver()
+        error_message = (
+            "Validation failed: [{'field': 'cc_emails', "
+            "'message': 'Has 546 values, it can have maximum of 49 values', "
+            "'code': 'invalid_value'}]"
+        )
+        mock_api.return_value.comments.create_reply.side_effect = (
+            fd_errors.FreshdeskBadRequest(error_message)
+        )
+        with self.assertRaises(exceptions.MessageSendError) as cm:
+            driver.send_message(
+                "subject-test",
+                "more text",
+                "owner@fake.org",
+                backend_id=44,
+            )
+        self.assertEqual(error_message, str(cm.exception))
 
     def test_create_ticket(self, mock_api):
         driver = freshdesk.FreshDeskDriver()

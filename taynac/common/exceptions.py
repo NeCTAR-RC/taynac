@@ -18,3 +18,7 @@ class TemplateNotFound(Exception):
 
 class TemplateDirNotFound(Exception):
     pass
+
+
+class MessageSendError(Exception):
+    pass
