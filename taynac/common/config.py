@@ -62,6 +62,21 @@ freshdesk_opts = [
     cfg.IntOpt("group_id", help="Default Freshdesk group"),
 ]
 
+sentry_opts = [
+    cfg.StrOpt(
+        "dsn",
+        secret=True,
+        help="GlitchTip/Sentry compatible DSN. When set, unhandled "
+        "exceptions and ERROR level log messages are reported.",
+    ),
+    cfg.StrOpt(
+        "environment",
+        help="Environment name reported with each event, "
+        "e.g. production or testing.",
+    ),
+]
+
+cfg.CONF.register_opts(sentry_opts, group="sentry")
 cfg.CONF.register_opts(taynac_opts, group="taynac")
 cfg.CONF.register_opts(freshdesk_opts, group="freshdesk")
 cfg.CONF.register_opts(flask_opts, group="flask")
@@ -97,6 +112,7 @@ def list_opts():
         ("taynac", taynac_opts),
         ("flask", flask_opts),
         ("freshdesk", freshdesk_opts),
+        ("sentry", sentry_opts),
         add_auth_opts(),
     ]
 
