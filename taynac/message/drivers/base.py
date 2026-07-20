@@ -32,7 +32,7 @@ def get_jinja2_env():
         raise exceptions.TemplateDirNotFound(
             f"Cannot find template_dir {template_dir}"
         )
-    LOG.info(f"Getting Taynac templates from {template_dir}")
+    LOG.info("Getting Taynac templates from %s", template_dir)
     return jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
 
 
