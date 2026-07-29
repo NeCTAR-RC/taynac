@@ -11,15 +11,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
 from oslo_policy import policy
 
-
-CONF = cfg.CONF
-_POLICY_PATH = "/etc/taynac/policy.yaml"
-
-
-enforcer = policy.Enforcer(CONF, policy_file=_POLICY_PATH)
 
 ADMIN_OR_OWNER_OR_WRITER = "admin_or_owner_or_writer"
 ADMIN_OR_OWNER_OR_READER = "admin_or_owner_or_reader"
@@ -75,9 +68,6 @@ message_rules = [
         operations=[{"path": "/v1/message/", "method": "POST"}],
     ),
 ]
-
-enforcer.register_defaults(base_rules)
-enforcer.register_defaults(message_rules)
 
 
 def list_rules():
