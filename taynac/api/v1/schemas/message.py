@@ -14,15 +14,38 @@
 from taynac.extensions import ma
 
 from marshmallow import fields
+from marshmallow import validates_schema
+from marshmallow import ValidationError
 
 
 class MessageSchema(ma.Schema):
     subject = fields.Str(required=True)
     body = fields.Str(required=True)
-    recipient = fields.Email(required=True)
-    cc = fields.List(fields.Email())
+    recipient = fields.Email()
+    cc = fields.List(fields.Email(), load_default=[])
     tags = fields.List(fields.Str())
     backend_id = fields.Str()
+    project_id = fields.Str()
+
+    @validates_schema
+    def validate_recipients(self, data, **kwargs):
+        has_recipient = "recipient" in data
+        has_project = "project_id" in data
+        if has_recipient and has_project:
+            raise ValidationError(
+                "recipient and project_id are mutually exclusive",
+                field_name="project_id",
+            )
+        if not has_recipient and not has_project:
+            raise ValidationError(
+                "One of recipient or project_id is required",
+                field_name="recipient",
+            )
+        if has_project and data.get("cc"):
+            raise ValidationError(
+                "cc cannot be provided with project_id",
+                field_name="cc",
+            )
 
 
 message = MessageSchema()
@@ -30,6 +53,8 @@ message = MessageSchema()
 
 class MessageResponseSchema(ma.Schema):
     backend_id = fields.Str(required=True)
+    recipient = fields.Email()
+    cc = fields.List(fields.Email())
 
 
 message_response = MessageResponseSchema()

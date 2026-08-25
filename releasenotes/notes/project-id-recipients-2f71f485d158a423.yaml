@@ -1,0 +1,22 @@
+---
+features:
+  - |
+    The message API now accepts an optional ``project_id`` field as an
+    alternative to ``recipient`` and ``cc``. When given, Taynac resolves
+    the recipients from Keystone: the first enabled tenant manager with
+    a valid email address becomes the recipient (falling back to the
+    first member when the project has no notifiable tenant managers)
+    and all remaining tenant manager and member emails are cc'd. The
+    resolved recipient and cc list are returned in the response. The
+    role names and cc limit are configurable via the new ``[identity]``
+    options ``manager_role``, ``member_role`` and ``cc_limit``.
+upgrade:
+  - |
+    Taynac now requires ``python-keystoneclient``. When the new
+    ``project_id`` message field is used, the ``[service_auth]``
+    service account must be able to read Keystone projects, role
+    assignments, roles and users.
+fixes:
+  - |
+    Message requests that omitted the optional ``cc`` field no longer
+    fail with an internal server error.

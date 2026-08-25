@@ -62,6 +62,28 @@ freshdesk_opts = [
     cfg.IntOpt("group_id", help="Default Freshdesk group"),
 ]
 
+identity_opts = [
+    cfg.StrOpt(
+        "manager_role",
+        default="tenantmanager",
+        help="Name of the keystone role identifying a project's tenant "
+        "managers. Matched case-insensitively. The first enabled manager "
+        "with an email address becomes the primary recipient.",
+    ),
+    cfg.StrOpt(
+        "member_role",
+        default="member",
+        help="Name of the keystone role identifying project members. "
+        "Matched case-insensitively.",
+    ),
+    cfg.IntOpt(
+        "cc_limit",
+        default=49,
+        help="Maximum number of cc addresses when resolving recipients "
+        "from a project. Freshdesk rejects emails with more than 49 ccs.",
+    ),
+]
+
 sentry_opts = [
     cfg.StrOpt(
         "dsn",
@@ -79,6 +101,7 @@ sentry_opts = [
 cfg.CONF.register_opts(sentry_opts, group="sentry")
 cfg.CONF.register_opts(taynac_opts, group="taynac")
 cfg.CONF.register_opts(freshdesk_opts, group="freshdesk")
+cfg.CONF.register_opts(identity_opts, group="identity")
 cfg.CONF.register_opts(flask_opts, group="flask")
 cfg.CONF.register_opts(default_opts)
 
@@ -112,6 +135,7 @@ def list_opts():
         ("taynac", taynac_opts),
         ("flask", flask_opts),
         ("freshdesk", freshdesk_opts),
+        ("identity", identity_opts),
         ("sentry", sentry_opts),
         add_auth_opts(),
     ]

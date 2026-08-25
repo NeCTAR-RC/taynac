@@ -22,3 +22,15 @@ class TemplateDirNotFound(Exception):
 
 class MessageSendError(Exception):
     pass
+
+
+class RecipientResolutionError(Exception):
+    pass
+
+
+class ProjectNotFound(RecipientResolutionError):
+    pass
+
+
+class NoRecipientsFound(RecipientResolutionError):
+    pass

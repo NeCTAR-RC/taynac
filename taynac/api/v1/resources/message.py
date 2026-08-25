@@ -14,6 +14,7 @@
 
 from flask import request
 import flask_restful
+from keystoneauth1 import exceptions as ks_exc
 import marshmallow
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -22,6 +23,7 @@ from oslo_policy import policy
 from taynac.api.v1.resources import base
 from taynac.api.v1.schemas import message as schemas
 from taynac.common import exceptions
+from taynac.common import identity
 from taynac.common import policies
 from taynac.message import api
 
@@ -47,17 +49,38 @@ class Message(base.Resource):
         except marshmallow.ValidationError as err:
             return {"message": err.messages}, 422
 
+        recipient = message.get("recipient")
+        cc = message["cc"]
+        project_id = message.get("project_id")
+
+        if project_id:
+            try:
+                recipient, cc = identity.get_project_recipients(project_id)
+            except exceptions.RecipientResolutionError as err:
+                return {"message": str(err)}, 400
+            except ks_exc.ClientException:
+                LOG.exception(
+                    "Keystone error resolving recipients for project %s",
+                    project_id,
+                )
+                return {
+                    "message": "Failed to resolve recipients from "
+                    "identity service"
+                }, 500
+
         mapi = api.MessageAPI()
         try:
             data = mapi.send_message(
                 message["subject"],
                 message["body"],
-                message["recipient"],
-                message["cc"],
+                recipient,
+                cc,
                 tags=message.get("tags", []),
                 backend_id=message.get("backend_id", None),
             )
         except exceptions.MessageSendError as err:
             return {"message": str(err)}, 400
 
+        data["recipient"] = recipient
+        data["cc"] = cc
         return schemas.message_response.dump(data)
