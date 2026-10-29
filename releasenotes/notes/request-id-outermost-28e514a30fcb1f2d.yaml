@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    The request ID middleware now wraps the Keystone authentication
+    middleware, so authentication failures include an
+    ``x-openstack-request-id`` header and request contexts carry the
+    request ID.

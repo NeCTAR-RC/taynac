@@ -70,11 +70,14 @@ def create_app(test_config=None, conf_file=None, init_config=True):
         app.wsgi_app, {'/healthcheck': hc_app}
     )
     app.wsgi_app = http_proxy_to_wsgi.HTTPProxyToWSGI(app.wsgi_app)
-    app.wsgi_app = request_id.RequestId(app.wsgi_app)
 
     if CONF.auth_strategy == "keystone":
         app.wsgi_app = keystone.KeystoneContext(app.wsgi_app)
         app.wsgi_app = keystone.SkippingAuthProtocol(app.wsgi_app, {})
+
+    # Outermost so auth failures carry a request ID and the request
+    # context picks it up
+    app.wsgi_app = request_id.RequestId(app.wsgi_app)
 
     return app
 
