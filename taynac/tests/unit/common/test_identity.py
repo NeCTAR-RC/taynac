@@ -294,6 +294,48 @@ class TestGetProjectRecipients(base.TestCase):
         self.assertEqual("manager@example.com", recipient)
         self.assertEqual(["m0@example.com", "m1@example.com"], cc)
 
+    def test_cc_cap_keeps_managers_before_members(self):
+        cfg.CONF.set_override("cc_limit", 2, "identity")
+        client = fake_client(
+            [
+                FakeAssignment("u1", MANAGER_ROLE),
+                FakeAssignment("u2", MEMBER_ROLE),
+                FakeAssignment("u3", MANAGER_ROLE),
+                FakeAssignment("u4", MEMBER_ROLE),
+                FakeAssignment("u5", MANAGER_ROLE),
+            ],
+            {
+                "u1": FakeUser("u1", email="primary@example.com"),
+                "u2": FakeUser("u2", email="alpha@example.com"),
+                "u3": FakeUser("u3", email="zulu@example.com"),
+                "u4": FakeUser("u4", email="bravo@example.com"),
+                "u5": FakeUser("u5", email="yankee@example.com"),
+            },
+        )
+        recipient, cc = identity.get_project_recipients(
+            PROJECT_ID, client=client
+        )
+        self.assertEqual("primary@example.com", recipient)
+        self.assertEqual(["yankee@example.com", "zulu@example.com"], cc)
+
+    def test_cc_lists_managers_then_members(self):
+        client = fake_client(
+            [
+                FakeAssignment("u1", MANAGER_ROLE),
+                FakeAssignment("u2", MEMBER_ROLE),
+                FakeAssignment("u3", MANAGER_ROLE),
+            ],
+            {
+                "u1": FakeUser("u1", email="primary@example.com"),
+                "u2": FakeUser("u2", email="alpha@example.com"),
+                "u3": FakeUser("u3", email="zulu@example.com"),
+            },
+        )
+        recipient, cc = identity.get_project_recipients(
+            PROJECT_ID, client=client
+        )
+        self.assertEqual(["zulu@example.com", "alpha@example.com"], cc)
+
     def test_roles_and_users_fetched_once_per_id(self):
         client = fake_client(
             [

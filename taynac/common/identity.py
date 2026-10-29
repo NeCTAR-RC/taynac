@@ -42,8 +42,10 @@ def get_project_recipients(project_id, client=None):
     """Resolve notification recipients for a keystone project.
 
     Returns a (recipient, cc) tuple: the primary recipient email and a
-    sorted, deduplicated cc list excluding the primary, capped at
-    [identity] cc_limit.
+    deduplicated cc list excluding the primary, capped at
+    [identity] cc_limit. The cc list holds the sorted tenant manager
+    emails followed by the sorted member emails, so members are dropped
+    first when the list is capped.
 
     The primary recipient is the first enabled tenant manager with a
     valid email address, falling back to the first such member when the
@@ -104,15 +106,19 @@ def get_project_recipients(project_id, client=None):
                 emails.append(email)
         return emails
 
-    ordered = _emails(manager_ids) + _emails(member_ids)
-    if not ordered:
+    managers = _emails(manager_ids)
+    members = [email for email in _emails(member_ids) if email not in managers]
+    if not managers and not members:
         raise exceptions.NoRecipientsFound(
             "No users with valid email addresses found for "
             f"project {project_id}"
         )
 
-    recipient = ordered[0]
-    cc = sorted(set(ordered) - {recipient})
+    recipient = (managers + members)[0]
+    # Keep managers ahead of members so the cap drops members first
+    cc = sorted(set(managers) - {recipient}) + sorted(
+        set(members) - {recipient}
+    )
     cc_limit = CONF.identity.cc_limit
     if len(cc) > cc_limit:
         LOG.warning(

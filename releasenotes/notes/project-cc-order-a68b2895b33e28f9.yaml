@@ -1,0 +1,12 @@
+---
+upgrade:
+  - |
+    When recipients are resolved from a ``project_id``, the cc list now
+    holds the sorted tenant manager emails followed by the sorted member
+    emails, instead of a single alphabetical list.
+fixes:
+  - |
+    When the cc list for a ``project_id`` is capped at
+    ``[identity] cc_limit``, members are now dropped before tenant
+    managers. Previously the list was sorted alphabetically before it was
+    capped, so tenant managers could be dropped.
