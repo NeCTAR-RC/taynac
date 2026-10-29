@@ -60,6 +60,12 @@ freshdesk_opts = [
     cfg.StrOpt("key", secret=True),
     cfg.IntOpt("email_config_id"),
     cfg.IntOpt("group_id", help="Default Freshdesk group"),
+    cfg.FloatOpt(
+        "timeout",
+        default=10,
+        min=0,
+        help="Timeout in seconds for each request to the Freshdesk API.",
+    ),
 ]
 
 identity_opts = [

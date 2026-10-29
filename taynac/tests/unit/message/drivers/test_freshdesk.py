@@ -172,6 +172,13 @@ class FreshDeskDriverTests(base.TestCase):
                         "subject-test", "text", "owner@fake.org"
                     )
 
+    def test_timeout_adapter_mounted(self, mock_api):
+        CONF.set_override("timeout", 7, "freshdesk")
+        freshdesk.FreshDeskDriver()
+        mount = mock_api.return_value._session.mount
+        mount.assert_called_once_with("https://", mock.ANY)
+        self.assertEqual(7, mount.call_args[0][1].timeout)
+
     def test_create_ticket(self, mock_api):
         driver = freshdesk.FreshDeskDriver()
         mock_api.return_value.tickets.create_outbound_email.return_value = (
@@ -217,3 +224,17 @@ class FreshDeskDriverTests(base.TestCase):
         mock_api.return_value.comments.create_note.assert_called_with(
             1, "note-update"
         )
+
+
+class TimeoutHTTPAdapterTests(base.TestCase):
+    @mock.patch("requests.adapters.HTTPAdapter.send")
+    def test_default_timeout(self, mock_send):
+        adapter = freshdesk.TimeoutHTTPAdapter(5)
+        adapter.send("request", timeout=None, verify=True)
+        mock_send.assert_called_once_with("request", timeout=5, verify=True)
+
+    @mock.patch("requests.adapters.HTTPAdapter.send")
+    def test_explicit_timeout_kept(self, mock_send):
+        adapter = freshdesk.TimeoutHTTPAdapter(5)
+        adapter.send("request", timeout=2)
+        mock_send.assert_called_once_with("request", timeout=2)

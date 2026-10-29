@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Requests to the Freshdesk API now time out. The timeout defaults to
+    10 seconds and is configurable with the new ``[freshdesk] timeout``
+    option. A timed out request returns 502.

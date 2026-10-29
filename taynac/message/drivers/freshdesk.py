@@ -16,6 +16,7 @@ from freshdesk.v2 import errors as fd_errors
 from oslo_config import cfg
 from oslo_log import log as logging
 import requests
+from requests import adapters
 
 from taynac.common import exceptions
 from taynac.message.drivers import base
@@ -25,10 +26,28 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
+class TimeoutHTTPAdapter(adapters.HTTPAdapter):
+    """HTTPAdapter that applies a default timeout to every request"""
+
+    def __init__(self, timeout, *args, **kwargs):
+        self.timeout = timeout
+        super().__init__(*args, **kwargs)
+
+    def send(self, request, **kwargs):
+        if kwargs.get("timeout") is None:
+            kwargs["timeout"] = self.timeout
+        return super().send(request, **kwargs)
+
+
 class FreshDeskDriver(base.MessagingDriver):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.api = fd_api.API(CONF.freshdesk.domain, CONF.freshdesk.key)
+        # python-freshdesk doesn't support a timeout, so set one on its
+        # underlying requests session
+        self.api._session.mount(
+            "https://", TimeoutHTTPAdapter(CONF.freshdesk.timeout)
+        )
 
     def send_message(
         self, subject, body, recipient, cc=[], tags=[], backend_id=None
