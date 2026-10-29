@@ -19,15 +19,23 @@ from stevedore import driver as stevedore_driver
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
+_DRIVER = None
 
 
-class MessageAPI:
-    def __init__(self):
-        self.driver = stevedore_driver.DriverManager(
+def get_driver():
+    global _DRIVER
+    if not _DRIVER:
+        _DRIVER = stevedore_driver.DriverManager(
             namespace="taynac.message_driver",
             name=CONF.taynac.message_driver,
             invoke_on_load=True,
         ).driver
+    return _DRIVER
+
+
+class MessageAPI:
+    def __init__(self):
+        self.driver = get_driver()
 
     def send_message(
         self, subject, body, recipient, cc=[], tags=[], backend_id=None

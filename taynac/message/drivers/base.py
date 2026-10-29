@@ -37,15 +37,18 @@ def get_jinja2_env():
 
 
 class MessagingDriver:
+    _jinja2_env = None
+
     def send_message(
         self, subject, body, recipient, cc=[], tags=[], backend_id=None
     ):
         raise NotImplementedError
 
     def format(self, subject, body, template_name='envelope.tmpl') -> str:
-        env = get_jinja2_env()
+        if not self._jinja2_env:
+            self._jinja2_env = get_jinja2_env()
         try:
-            template = env.get_template(template_name)
+            template = self._jinja2_env.get_template(template_name)
         except jinja2.TemplateNotFound:
             raise exceptions.TemplateNotFound(
                 f"Cannot find template {template_name}"

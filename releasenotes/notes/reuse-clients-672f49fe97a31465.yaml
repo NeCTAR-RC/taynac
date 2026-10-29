@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Taynac now reuses its Keystone client, message driver and template
+    environment between requests. It no longer authenticates to Keystone
+    on every ``project_id`` message.

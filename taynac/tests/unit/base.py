@@ -18,8 +18,10 @@ from oslo_config import cfg
 from oslo_context import context
 
 from taynac import app
+from taynac.common import identity
 from taynac.common import keystone
 from taynac import extensions
+from taynac.message import api as message_api
 
 PROJECT_ID = "ksprojectid1"
 USER_ID = "ksuserid1"
@@ -46,6 +48,8 @@ class TestCase(flask_testing.TestCase):
         super().tearDown(*args, **kwargs)
         cfg.CONF.reset()
         extensions.api.resources = []
+        identity._CLIENT = None
+        message_api._DRIVER = None
 
 
 class TestKeystoneWrapper:

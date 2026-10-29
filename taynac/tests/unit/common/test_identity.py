@@ -352,3 +352,14 @@ class TestGetProjectRecipients(base.TestCase):
         identity.get_project_recipients(PROJECT_ID, client=client)
         self.assertEqual(2, client.roles.get.call_count)
         self.assertEqual(2, client.users.get.call_count)
+
+    @mock.patch("taynac.common.identity.ks_client.Client")
+    @mock.patch("taynac.common.identity.keystone.KeystoneSession")
+    def test_keystone_client_reused(self, mock_session, mock_client):
+        first = identity.get_keystone_client()
+        second = identity.get_keystone_client()
+        self.assertIs(first, second)
+        mock_session.assert_called_once_with()
+        mock_client.assert_called_once_with(
+            session=mock_session.return_value.get_session.return_value
+        )

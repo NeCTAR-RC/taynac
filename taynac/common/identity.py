@@ -26,10 +26,17 @@ LOG = logging.getLogger(__name__)
 
 EMAIL_RE = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
+_CLIENT = None
+
 
 def get_keystone_client():
-    session = keystone.KeystoneSession().get_session()
-    return ks_client.Client(session=session)
+    # Reuse the client so its session's service token is cached between
+    # requests rather than re-authenticating every time
+    global _CLIENT
+    if not _CLIENT:
+        session = keystone.KeystoneSession().get_session()
+        _CLIENT = ks_client.Client(session=session)
+    return _CLIENT
 
 
 def _ref_id(ref):

@@ -37,6 +37,13 @@ class DriverBaseTests(base.TestCase):
         with self.assertRaises(NotImplementedError):
             driver.send_message('foo', 'bar', 'nobody@example.com')
 
+    @mock.patch('taynac.message.drivers.base.get_jinja2_env')
+    def test_format_caches_env(self, mock_get_env):
+        driver = taynac.message.drivers.base.MessagingDriver()
+        driver.format('subject', 'body')
+        driver.format('subject', 'body')
+        mock_get_env.assert_called_once_with()
+
     def test_format_missing(self):
         driver = taynac.message.drivers.base.MessagingDriver()
         with self.assertRaisesRegex(
