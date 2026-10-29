@@ -77,17 +77,22 @@ def get_project_recipients(project_id, client=None):
     role_names = {}
     manager_ids = []
     member_ids = []
-    # effective=True expands group assignments into their users
+    # effective=True expands group assignments into their users and
+    # include_names=True saves looking up each role by ID
     for assignment in client.role_assignments.list(
-        project=project_id, effective=True
+        project=project_id, effective=True, include_names=True
     ):
+        role = getattr(assignment, "role", None)
         user_id = _ref_id(getattr(assignment, "user", None))
-        role_id = _ref_id(getattr(assignment, "role", None))
+        role_id = _ref_id(role)
         if not user_id or not role_id:
             continue
 
         if role_id not in role_names:
-            role_names[role_id] = client.roles.get(role_id).name.lower()
+            name = role.get("name") if isinstance(role, dict) else None
+            if not name:
+                name = client.roles.get(role_id).name
+            role_names[role_id] = name.lower()
         role_name = role_names[role_id]
 
         if role_name == manager_role and user_id not in manager_ids:

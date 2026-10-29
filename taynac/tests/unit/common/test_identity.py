@@ -48,11 +48,13 @@ class FakeUser:
 
 
 class FakeAssignment:
-    def __init__(self, user_id=None, role_id=None):
+    def __init__(self, user_id=None, role_id=None, role_name=None):
         if user_id:
             self.user = {"id": user_id}
         if role_id:
             self.role = {"id": role_id}
+            if role_name:
+                self.role["name"] = role_name
 
 
 def fake_client(assignments, users, project_exists=True):
@@ -87,7 +89,7 @@ class TestGetProjectRecipients(base.TestCase):
         self.assertEqual("manager@example.com", recipient)
         self.assertEqual(["alpha@example.com", "zeta@example.com"], cc)
         client.role_assignments.list.assert_called_once_with(
-            project=PROJECT_ID, effective=True
+            project=PROJECT_ID, effective=True, include_names=True
         )
 
     def test_second_manager_goes_to_cc(self):
@@ -336,6 +338,35 @@ class TestGetProjectRecipients(base.TestCase):
         )
         self.assertEqual(["zulu@example.com", "alpha@example.com"], cc)
 
+    def test_role_names_from_assignments(self):
+        client = fake_client(
+            [
+                FakeAssignment("u1", MANAGER_ROLE, "TenantManager"),
+                FakeAssignment("u2", MEMBER_ROLE, "member"),
+            ],
+            {
+                "u1": FakeUser("u1", email="manager@example.com"),
+                "u2": FakeUser("u2", email="member@example.com"),
+            },
+        )
+        recipient, cc = identity.get_project_recipients(
+            PROJECT_ID, client=client
+        )
+        self.assertEqual("manager@example.com", recipient)
+        self.assertEqual(["member@example.com"], cc)
+        client.roles.get.assert_not_called()
+
+    @mock.patch("taynac.common.identity.ks_client.Client")
+    @mock.patch("taynac.common.identity.keystone.KeystoneSession")
+    def test_keystone_client_reused(self, mock_session, mock_client):
+        first = identity.get_keystone_client()
+        second = identity.get_keystone_client()
+        self.assertIs(first, second)
+        mock_session.assert_called_once_with()
+        mock_client.assert_called_once_with(
+            session=mock_session.return_value.get_session.return_value
+        )
+
     def test_roles_and_users_fetched_once_per_id(self):
         client = fake_client(
             [
@@ -352,14 +383,3 @@ class TestGetProjectRecipients(base.TestCase):
         identity.get_project_recipients(PROJECT_ID, client=client)
         self.assertEqual(2, client.roles.get.call_count)
         self.assertEqual(2, client.users.get.call_count)
-
-    @mock.patch("taynac.common.identity.ks_client.Client")
-    @mock.patch("taynac.common.identity.keystone.KeystoneSession")
-    def test_keystone_client_reused(self, mock_session, mock_client):
-        first = identity.get_keystone_client()
-        second = identity.get_keystone_client()
-        self.assertIs(first, second)
-        mock_session.assert_called_once_with()
-        mock_client.assert_called_once_with(
-            session=mock_session.return_value.get_session.return_value
-        )

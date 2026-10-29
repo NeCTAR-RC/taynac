@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Taynac now reads role names from the Keystone role assignment
+    listing instead of fetching each role separately.
