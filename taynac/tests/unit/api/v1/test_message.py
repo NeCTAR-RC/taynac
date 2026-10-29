@@ -88,6 +88,25 @@ class TestAdminMessageAPI(TestMessageAPI):
         self.assertStatus(response, 400)
         self.assertEqual(error_message, response.get_json()["message"])
 
+    def test_message_send_error_status_codes(self):
+        data = {
+            "subject": "Test",
+            "body": "Hi",
+            "recipient": "test@test.test",
+        }
+        for exc, status in [
+            (exceptions.MessageNotFound, 404),
+            (exceptions.MessageBackendError, 502),
+            (exceptions.MessageBackendUnavailable, 503),
+        ]:
+            with mock.patch(
+                "taynac.message.api.MessageAPI.send_message",
+                side_effect=exc("boom"),
+            ):
+                response = self.client.post("/v1/message/", json=data)
+            self.assertStatus(response, status)
+            self.assertEqual("boom", response.get_json()["message"])
+
     def test_message_send_no_data(self):
         response = self.client.post("/v1/message/")
         self.assertStatus(response, 400)

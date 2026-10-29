@@ -21,7 +21,19 @@ class TemplateDirNotFound(Exception):
 
 
 class MessageSendError(Exception):
-    pass
+    code = 400
+
+
+class MessageNotFound(MessageSendError):
+    code = 404
+
+
+class MessageBackendError(MessageSendError):
+    code = 502
+
+
+class MessageBackendUnavailable(MessageSendError):
+    code = 503
 
 
 class RecipientResolutionError(Exception):

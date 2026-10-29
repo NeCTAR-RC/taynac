@@ -15,6 +15,7 @@ from freshdesk.v2 import api as fd_api
 from freshdesk.v2 import errors as fd_errors
 from oslo_config import cfg
 from oslo_log import log as logging
+import requests
 
 from taynac.common import exceptions
 from taynac.message.drivers import base
@@ -40,9 +41,16 @@ class FreshDeskDriver(base.MessagingDriver):
         Only the body and cc's will be used.
         """
 
+        if backend_id:
+            try:
+                ticket_id = int(backend_id)
+            except ValueError:
+                raise exceptions.MessageSendError(
+                    f"Invalid Freshdesk ticket ID {backend_id}"
+                )
+
         try:
             if backend_id:
-                ticket_id = int(backend_id)
                 self._update_ticket(ticket_id, body, cc_emails=cc)
             else:
                 ticket_id = self._create_ticket(
@@ -56,6 +64,18 @@ class FreshDeskDriver(base.MessagingDriver):
         except fd_errors.FreshdeskBadRequest as e:
             LOG.warning("Freshdesk rejected message to %s: %s", recipient, e)
             raise exceptions.MessageSendError(str(e))
+        except fd_errors.FreshdeskRateLimited as e:
+            LOG.warning(
+                "Freshdesk rate limited message to %s: %s", recipient, e
+            )
+            raise exceptions.MessageBackendUnavailable(str(e))
+        except requests.RequestException as e:
+            # Includes the remaining Freshdesk errors, which subclass
+            # requests.HTTPError, as well as timeouts and connection errors
+            LOG.error("Freshdesk request failed for %s: %s", recipient, e)
+            raise exceptions.MessageBackendError(
+                "Failed to send message via Freshdesk"
+            )
 
         return {"backend_id": ticket_id}
 
@@ -80,9 +100,13 @@ class FreshDeskDriver(base.MessagingDriver):
         return ticket_id
 
     def _update_ticket(self, ticket_id, body, cc_emails):
-        self.api.comments.create_reply(
-            ticket_id, body=body, cc_emails=cc_emails
-        )
+        try:
+            self.api.comments.create_reply(
+                ticket_id, body=body, cc_emails=cc_emails
+            )
+        except fd_errors.FreshdeskNotFound:
+            LOG.warning("Freshdesk ticket %s not found", ticket_id)
+            raise exceptions.MessageNotFound(f"Ticket {ticket_id} not found")
         LOG.info("Sent reply to ticket %s", ticket_id)
 
     def _update_ticket_requester(self, ticket_id, owner):

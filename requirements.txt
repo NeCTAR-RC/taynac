@@ -8,6 +8,7 @@ oslo.middleware
 oslo.policy
 stevedore
 python-freshdesk
+requests
 sentry-sdk
 flask
 flask_restful

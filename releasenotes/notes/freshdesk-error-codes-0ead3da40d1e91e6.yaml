@@ -1,0 +1,10 @@
+---
+fixes:
+  - |
+    Freshdesk errors other than a bad request no longer return an
+    internal server error. Replying to a ticket that does not exist
+    returns 404, a Freshdesk rate limit returns 503, and other Freshdesk
+    failures and connection errors return 502.
+  - |
+    A ``backend_id`` that is not a valid Freshdesk ticket ID now returns
+    400 instead of an internal server error.

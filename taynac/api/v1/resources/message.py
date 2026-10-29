@@ -79,7 +79,7 @@ class Message(base.Resource):
                 backend_id=message.get("backend_id", None),
             )
         except exceptions.MessageSendError as err:
-            return {"message": str(err)}, 400
+            return {"message": str(err)}, err.code
 
         data["recipient"] = recipient
         data["cc"] = cc

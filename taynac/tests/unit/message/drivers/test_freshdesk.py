@@ -18,6 +18,7 @@ from unittest import mock
 
 from freshdesk.v2 import errors as fd_errors
 from oslo_config import cfg
+import requests
 
 import taynac
 from taynac.common import exceptions
@@ -105,6 +106,71 @@ class FreshDeskDriverTests(base.TestCase):
                 backend_id=44,
             )
         self.assertEqual(error_message, str(cm.exception))
+
+    def test_api_send_message_invalid_backend_id(self, mock_api):
+        driver = freshdesk.FreshDeskDriver()
+        with self.assertRaisesRegex(
+            exceptions.MessageSendError, "Invalid Freshdesk ticket ID abc"
+        ):
+            driver.send_message(
+                "subject-test",
+                "more text",
+                "owner@fake.org",
+                backend_id="abc",
+            )
+        mock_api.return_value.comments.create_reply.assert_not_called()
+
+    def test_api_send_message_ticket_not_found(self, mock_api):
+        driver = freshdesk.FreshDeskDriver()
+        mock_api.return_value.comments.create_reply.side_effect = (
+            fd_errors.FreshdeskNotFound("Freshdesk Request Failed")
+        )
+        with self.assertRaisesRegex(
+            exceptions.MessageNotFound, "Ticket 44 not found"
+        ):
+            driver.send_message(
+                "subject-test",
+                "more text",
+                "owner@fake.org",
+                backend_id="44",
+            )
+
+    def test_api_send_message_rate_limited(self, mock_api):
+        driver = freshdesk.FreshDeskDriver()
+        mock_api.return_value.comments.create_reply.side_effect = (
+            fd_errors.FreshdeskRateLimited("429 Rate Limit Exceeded")
+        )
+        with self.assertRaisesRegex(
+            exceptions.MessageBackendUnavailable, "429 Rate Limit Exceeded"
+        ):
+            driver.send_message(
+                "subject-test",
+                "more text",
+                "owner@fake.org",
+                backend_id=44,
+            )
+
+    def test_api_send_message_backend_errors(self, mock_api):
+        driver = freshdesk.FreshDeskDriver()
+        create = mock_api.return_value.tickets.create_outbound_email
+        for error in [
+            fd_errors.FreshdeskUnauthorized("denied"),
+            fd_errors.FreshdeskServerError("500: Server Error"),
+            requests.Timeout("timed out"),
+            requests.ConnectionError("refused"),
+        ]:
+            create.side_effect = error
+            with mock.patch(
+                "taynac.message.drivers.base.get_jinja2_env",
+                return_value=test_jinja2_env(),
+            ):
+                with self.assertRaisesRegex(
+                    exceptions.MessageBackendError,
+                    "Failed to send message via Freshdesk",
+                ):
+                    driver.send_message(
+                        "subject-test", "text", "owner@fake.org"
+                    )
 
     def test_create_ticket(self, mock_api):
         driver = freshdesk.FreshDeskDriver()
