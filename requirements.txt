@@ -1,6 +1,6 @@
 pbr
 keystoneauth1
-keystonemiddleware
+keystonemiddleware>=12.1.0
 python-keystoneclient
 oslo.config
 oslo.log
